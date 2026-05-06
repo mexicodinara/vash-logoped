@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой профиль — Ваш Логопед</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>const sb = supabase.createClient('https://azphczdppmtoqpecvtli.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6cGhjemRwcG10b3FwZWN2dGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzgzNjYsImV4cCI6MjA5MzY1NDM2Nn0.1w2BdYT487ZPbP7ToDJfQnTNegPtCBjFs0PRlw-ies8');</script>
+<style>
+:root { --pink:#E84FA3; --pink-pale:#FDE9F4; --pink-dark:#C0397E; --text:#1a1a2e; --gray:#6b7280; --border:#f0e6ec; --green:#1a9e78; --green-pale:#e8f8f1; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nunito',sans-serif; background:#f8f9fc; padding:40px 20px; }
+.page { max-width:560px; margin:0 auto; }
+.back { color:var(--pink); font-weight:700; text-decoration:none; font-size:14px; margin-bottom:24px; display:inline-block; }
+.avatar { width:80px; height:80px; background:linear-gradient(135deg,var(--pink),var(--pink-dark)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Unbounded',sans-serif; font-size:28px; font-weight:900; color:white; margin:0 auto 16px; }
+.card { background:white; border-radius:24px; padding:36px; border:1.5px solid var(--border); margin-bottom:20px; text-align:center; }
+h2 { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:900; margin-bottom:6px; }
+.email { color:var(--gray); font-size:14px; font-weight:600; margin-bottom:20px; }
+.sub-badge { display:inline-block; padding:8px 20px; border-radius:50px; font-weight:800; font-size:14px; margin-bottom:24px; }
+.sub-active { background:var(--green-pale); color:var(--green); }
+.sub-free { background:var(--pink-pale); color:var(--pink); }
+.btn { display:block; width:100%; padding:14px; border-radius:50px; font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; cursor:pointer; text-decoration:none; text-align:center; margin-bottom:12px; border:none; }
+.btn-primary { background:linear-gradient(135deg,var(--pink),var(--pink-dark)); color:white; box-shadow:0 4px 14px rgba(232,79,163,0.35); }
+.btn-outline { border:2px solid var(--border); color:var(--gray); background:white; }
+.btn-outline:hover { border-color:var(--pink); color:var(--pink); }
+.btn-danger { border:2px solid #fca5a5; color:#dc2626; background:white; }
+</style>
+</head>
+<body>
+<div class="page">
+  <a href="catalog.html" class="back">← Назад в каталог</a>
+  <div class="card">
+    <div class="avatar" id="user-initials">?</div>
+    <h2 id="user-name">Загрузка...</h2>
+    <div class="email" id="user-email"></div>
+    <div class="sub-badge sub-free" id="sub-badge">Бесплатный доступ</div>
+    <a href="payment.html" class="btn btn-primary" id="upgrade-btn">⭐ Оформить подписку — 300 сом/мес</a>
+    <a href="catalog.html" class="btn btn-outline">🎮 Перейти в каталог</a>
+    <button class="btn btn-danger" onclick="doLogout()" style="margin-top:8px;">Выйти из аккаунта</button>
+  </div>
+</div>
+
+<script>
+async function loadProfile() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+  
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+  
+  const name = profile?.name || session.user.email.split('@')[0];
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-email').textContent = session.user.email;
+  document.getElementById('user-initials').textContent = name[0].toUpperCase();
+  
+  if (profile?.is_subscribed) {
+    document.getElementById('sub-badge').textContent = '✅ Подписка активна';
+    document.getElementById('sub-badge').className = 'sub-badge sub-active';
+    document.getElementById('upgrade-btn').style.display = 'none';
+  }
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+loadProfile();
+</script>
+</body>
+</html>

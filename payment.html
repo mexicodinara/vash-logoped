@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подписка — Ваш Логопед</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>const sb = supabase.createClient('https://azphczdppmtoqpecvtli.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6cGhjemRwcG10b3FwZWN2dGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzgzNjYsImV4cCI6MjA5MzY1NDM2Nn0.1w2BdYT487ZPbP7ToDJfQnTNegPtCBjFs0PRlw-ies8');</script>
+<style>
+:root { --pink:#E84FA3; --pink-light:#F7A8D4; --pink-pale:#FDE9F4; --pink-dark:#C0397E; --text:#1a1a2e; --gray:#6b7280; --border:#f0e6ec; --green:#1a9e78; --green-pale:#e8f8f1; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nunito',sans-serif; background:#f8f9fc; padding:40px 20px; }
+.page { max-width:600px; margin:0 auto; }
+.back { color:var(--pink); font-weight:700; text-decoration:none; font-size:14px; display:inline-flex; align-items:center; gap:6px; margin-bottom:24px; }
+.card { background:white; border-radius:24px; padding:36px; border:1.5px solid var(--border); margin-bottom:20px; }
+h1 { font-family:'Unbounded',sans-serif; font-size:24px; font-weight:900; margin-bottom:8px; }
+.price { font-family:'Unbounded',sans-serif; font-size:48px; font-weight:900; color:var(--pink); margin:16px 0 4px; }
+.price span { font-size:18px; color:var(--gray); font-weight:700; }
+.features { list-style:none; display:flex; flex-direction:column; gap:12px; margin:24px 0; }
+.features li { display:flex; align-items:center; gap:12px; font-size:15px; font-weight:600; }
+.features li::before { content:'✓'; width:24px; height:24px; background:var(--green-pale); color:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; flex-shrink:0; }
+
+/* Реквизиты */
+.requisites { background:linear-gradient(135deg,#FFF0F8,#FDE9F4); border:1.5px solid var(--pink-light); border-radius:20px; padding:28px; }
+.req-title { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:900; margin-bottom:20px; }
+.req-item { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--pink-light); }
+.req-item:last-of-type { border-bottom:none; }
+.req-label { font-size:13px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; }
+.req-value { font-size:16px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; }
+.copy-btn { background:none; border:1.5px solid var(--pink-light); border-radius:8px; padding:4px 10px; font-size:12px; font-weight:700; color:var(--pink); cursor:pointer; transition:all 0.2s; }
+.copy-btn:hover { background:var(--pink); color:white; }
+
+.steps { display:flex; flex-direction:column; gap:16px; margin-top:24px; }
+.step { display:flex; gap:16px; align-items:flex-start; }
+.step-num { width:32px; height:32px; background:linear-gradient(135deg,var(--pink),var(--pink-dark)); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; flex-shrink:0; }
+.step-text { font-size:14px; font-weight:600; line-height:1.5; padding-top:5px; }
+.step-text strong { color:var(--pink); }
+
+.tg-btn { display:block; width:100%; padding:16px; background:#229ED9; border:none; border-radius:50px; color:white; font-family:'Nunito',sans-serif; font-weight:800; font-size:16px; cursor:pointer; text-align:center; text-decoration:none; margin-top:24px; transition:opacity 0.2s; }
+.tg-btn:hover { opacity:0.9; }
+
+.already { background:var(--green-pale); border:1.5px solid var(--green); border-radius:16px; padding:20px 24px; display:none; }
+.already h3 { color:var(--green); font-size:18px; font-weight:800; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <a href="catalog.html" class="back">← Назад в каталог</a>
+
+  <!-- Уже подписан -->
+  <div class="already" id="already-subscribed">
+    <h3>✅ У вас активная подписка!</h3>
+    <p style="font-size:14px;font-weight:600;color:#065f46;">Вы уже имеете доступ ко всем 300+ играм. Наслаждайтесь!</p>
+    <a href="catalog.html" style="display:inline-block;margin-top:12px;color:var(--green);font-weight:700;text-decoration:none;">Перейти в каталог →</a>
+  </div>
+
+  <div id="payment-content">
+    <div class="card">
+      <h1>Подписка специалиста</h1>
+      <p style="color:var(--gray);font-size:15px;font-weight:600;">Полный доступ ко всей платформе</p>
+      <div class="price">300 <span>сом / мес</span></div>
+      <ul class="features">
+        <li>300+ интерактивных игр</li>
+        <li>Работа на любом устройстве</li>
+        <li>Новые игры каждый месяц</li>
+        <li>Вебинары и мастер-классы</li>
+        <li>Telegram-бот с лайфхаками</li>
+      </ul>
+    </div>
+
+    <div class="requisites">
+      <div class="req-title">💳 Как оплатить</div>
+      <div class="req-item">
+        <div>
+          <div class="req-label">🇰🇬 Кыргызстан — Бакай Банк</div>
+          <div class="req-value">
+            <span id="phone-kg">+996 555 914 466</span>
+            <button class="copy-btn" onclick="copyText('phone-kg')">Копировать</button>
+          </div>
+        </div>
+      </div>
+      <div class="req-item">
+        <div>
+          <div class="req-label">🇷🇺 Россия — перевод по номеру</div>
+          <div class="req-value">
+            <span id="phone-ru">8 914 692 5651</span>
+            <button class="copy-btn" onclick="copyText('phone-ru')">Копировать</button>
+          </div>
+        </div>
+      </div>
+      <div class="req-item">
+        <div>
+          <div class="req-label">Сумма</div>
+          <div class="req-value">300 сом</div>
+        </div>
+      </div>
+      <div class="req-item">
+        <div>
+          <div class="req-label">Получатель</div>
+          <div class="req-value">Ваш Логопед</div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Переведите <strong>300 сом</strong> на указанный номер через Mbank, O!Деньги или любой банк</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Напишите нам в <strong>WhatsApp</strong> со скриншотом оплаты и вашим email</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Мы активируем подписку в течение <strong>1 часа</strong> в рабочее время</div>
+        </div>
+      </div>
+
+      <a href="https://wa.me/996555914466?text=Привет! Я оплатила подписку на Ваш Логопед. Прикладываю скриншот оплаты." class="tg-btn" id="tg-link" style="background:#25D366;">
+        💬 Написать по номеру +996 555 914 466
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text.trim());
+  event.target.textContent = '✓ Скопировано';
+  setTimeout(() => event.target.textContent = 'Копировать', 2000);
+}
+
+// Проверяем подписку
+sb.auth.getSession().then(async ({ data }) => {
+  if (!data.session) { window.location.href = 'login.html'; return; }
+  const { data: profile } = await sb.from('profiles').select('is_subscribed').eq('id', data.session.user.id).single();
+  if (profile?.is_subscribed) {
+    document.getElementById('already-subscribed').style.display = 'block';
+    document.getElementById('payment-content').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

@@ -323,6 +323,12 @@ nav { padding:0 20px; }
     max-height:44px!important;
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _SB_URL = "https://azphczdppmtoqpecvtli.supabase.co";
+const _SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6cGhjemRwcG10b3FwZWN2dGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzgzNjYsImV4cCI6MjA5MzY1NDM2Nn0.1w2BdYT487ZPbP7ToDJfQnTNegPtCBjFs0PRlw-ies8";
+const sb = supabase.createClient(_SB_URL, _SB_KEY);
+</script>
 </head>
 <body>
 
@@ -467,7 +473,7 @@ nav { padding:0 20px; }
 <script>
 // ─── ДАННЫЕ ИГР ───
 // Добавляй новые игры сюда! Просто скопируй объект и вставь ссылку.
-const GAMES = [
+let GAMES = [
   {
     id: 1, free: true,
     title: 'Найди тень',
@@ -663,7 +669,7 @@ function cardHTML(g) {
 
   const stars = '★'.repeat(g.stars) + '☆'.repeat(5 - g.stars);
 
-  if (g.free) {
+  if (g.free || (window._userProfile?.is_subscribed)) {
     return `
       <div class="game-card">
         <div class="game-thumb">
@@ -716,8 +722,71 @@ function closeModal() {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-// Инит
-renderGames();
+// Инит — загружаем из Supabase
+async function loadGames() {
+  const { data, error } = await sb.from('games').select('*').order('created_at', { ascending: false });
+  if (error) { console.error('Supabase error:', error); return; }
+  GAMES = data.map(g => ({
+    id: g.id,
+    free: g.is_free,
+    title: g.title,
+    cat: g.cat,
+    catLabel: g.cat_label || g.cat,
+    desc: g.description || '',
+    tags: g.tags || [],
+    stars: g.stars || 5,
+    thumb: g.thumb || '',
+    url: g.url || '',
+    age: g.age || '4',
+  }));
+  // Обновляем счётчики в сайдбаре
+  updateCounts();
+  renderGames();
+}
+
+function updateCounts() {
+  const cats = ['all','auto','diff','speech','lex','phon','mind','motor','diag'];
+  cats.forEach(cat => {
+    const el = document.getElementById('cnt-' + cat);
+    if (el) {
+      const count = cat === 'all' ? GAMES.length : GAMES.filter(g => g.cat === cat).length;
+      el.textContent = count;
+    }
+  });
+}
+
+// Проверяем авторизацию
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  
+  if (session) {
+    // Загружаем профиль
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    window._userProfile = profile;
+    window._userSession = session;
+    
+    // Обновляем кнопки в навбаре
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+      navRight.innerHTML = `
+        <a href="profile.html" class="btn-outline" style="font-size:13px;">👤 ${profile?.name || session.user.email.split('@')[0]}</a>
+        ${profile?.is_subscribed ? '<span style="background:#e8f8f1;color:#1a9e78;font-size:12px;font-weight:700;padding:6px 14px;border-radius:50px;border:1.5px solid #b2f0e0;">✅ Подписка</span>' : '<a href="payment.html" class="btn-primary">⭐ Подписка</a>'}
+      `;
+    }
+  } else {
+    // Не авторизован — обновляем кнопки
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+      navRight.innerHTML = `
+        <a href="login.html" class="btn-outline">Войти</a>
+        <a href="login.html" class="btn-primary">Регистрация</a>
+      `;
+    }
+  }
+}
+
+checkAuth();
+loadGames();
 </script>
 </body>
 </html>
